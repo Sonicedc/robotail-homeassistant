@@ -85,7 +85,8 @@ class RobotailApi:
             "X-UBT-AppId": self._app_id,
             "X-UBT-DeviceId": self._device_id,
             "X-UBT-Sign": f"{digest} {timestamp} {nonce} v2",
-            "User-Agent": "HomeAssistant-Robotail/0.1",
+            # Robotail rejects the HomeAssistant-Robotail client header with 403.
+            "User-Agent": "Robotail/1.0.1",
         }
         if authenticated:
             if self.auth is None or not self.auth.token:
@@ -114,7 +115,7 @@ class RobotailApi:
                 if response.status in (401, 403):
                     raise RobotailAuthError(
                         "Robotail authentication failed",
-                        code=response.status,
+                        code=f"HTTP {response.status}",
                         path=path,
                     )
                 payload = await response.json(content_type=None)

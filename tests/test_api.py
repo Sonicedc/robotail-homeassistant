@@ -6,7 +6,12 @@ import hashlib
 
 import pytest
 
-from custom_components.robotail.api import RobotailApi, RobotailError, normalize_account
+from custom_components.robotail.api import (
+    RobotailApi,
+    RobotailAuthError,
+    RobotailError,
+    normalize_account,
+)
 from custom_components.robotail.const import ACCOUNT_TYPE_EMAIL, ACCOUNT_TYPE_PHONE
 
 
@@ -77,6 +82,19 @@ async def test_login_hashes_password_and_reads_token():
     )
     assert body["areaCode"] == "US"
     assert "authorization" not in session.requests[0][2]["headers"]
+    assert session.requests[0][2]["headers"]["User-Agent"] == "Robotail/1.0.1"
+
+
+@pytest.mark.asyncio
+async def test_http_access_denied_retains_status_and_stage():
+    session = FakeSession([{"message": "Access denied"}], status=403)
+    api = RobotailApi(session, device_id="device-id")
+
+    with pytest.raises(RobotailAuthError) as caught:
+        await api.login("12025550123", "password", ACCOUNT_TYPE_PHONE, "US")
+
+    assert caught.value.code == "HTTP 403"
+    assert caught.value.path == "/user-service-rest/v2/user/login"
 
 
 @pytest.mark.asyncio

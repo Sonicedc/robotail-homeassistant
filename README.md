@@ -56,7 +56,9 @@ Home Assistant starts.
 
 ## Status and limitations
 
-Version 0.1.2 corrects the login HTTP method to `PUT` and the account-type
+Version 0.1.3 uses a Robotail client header accepted by the cloud service;
+the previous `HomeAssistant-Robotail` header caused HTTP 403 before credentials
+were checked. Version 0.1.2 corrects the login HTTP method to `PUT` and the account-type
 values to phone `0` and email `1`. Setup errors now show the failing step and
 API code, including structured errors returned with HTTP 400. After updating
 through HACS, restart Home Assistant before retrying setup.

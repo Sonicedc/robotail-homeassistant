@@ -67,8 +67,6 @@ class RobotailConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data[CONF_DEVICE_ID] = uuid.uuid4().hex
             try:
                 info = await validate_input(self.hass, data)
-            except RobotailAuthError:
-                errors["base"] = "invalid_auth"
             except RobotailConnectionError:
                 errors["base"] = "cannot_connect"
             except RobotailError as err:
@@ -87,7 +85,11 @@ class RobotailConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         placeholders["error_code"],
                     )
                 else:
-                    errors["base"] = "unknown"
+                    errors["base"] = (
+                        "invalid_auth"
+                        if isinstance(err, RobotailAuthError)
+                        else "unknown"
+                    )
             else:
                 unique = str(info.get("user_id") or data[CONF_USERNAME]).lower()
                 await self.async_set_unique_id(unique)
