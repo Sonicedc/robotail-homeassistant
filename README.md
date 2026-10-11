@@ -56,6 +56,11 @@ Home Assistant starts.
 
 ## Status and limitations
 
+Version 0.1.2 corrects the login HTTP method to `PUT` and the account-type
+values to phone `0` and email `1`. Setup errors now show the failing step and
+API code, including structured errors returned with HTTP 400. After updating
+through HACS, restart Home Assistant before retrying setup.
+
 - Unofficial and not affiliated with Robotail or AIROBO.
 - Read-only by design; cleaning commands are not exposed.
 - Cloud API changes may break the integration.

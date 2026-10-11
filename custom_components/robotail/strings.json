@@ -20,6 +20,7 @@
     "error": {
       "cannot_connect": "Unable to connect to Robotail",
       "invalid_auth": "Robotail rejected the account details",
+      "api_error": "Robotail could not complete {error_stage} (API code {error_code})",
       "unknown": "Unexpected response from Robotail"
     },
     "abort": {

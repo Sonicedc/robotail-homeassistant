@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
 import re
 import time
-from typing import Any
 import uuid
+from dataclasses import dataclass
+from typing import Any
 
 from aiohttp import ClientError, ClientSession
 
@@ -17,6 +17,11 @@ from .const import ACCOUNT_TYPE_VALUES, API_HOST, APP_ID, APP_KEY
 
 class RobotailError(Exception):
     """Base Robotail API error."""
+
+    def __init__(self, message: str, *, code=None, path: str | None = None):
+        super().__init__(message)
+        self.code = code
+        self.path = path
 
 
 class RobotailAuthError(RobotailError):
@@ -107,9 +112,22 @@ class RobotailApi:
                 timeout=20,
             ) as response:
                 if response.status in (401, 403):
-                    raise RobotailAuthError("Robotail authentication failed")
-                response.raise_for_status()
+                    raise RobotailAuthError(
+                        "Robotail authentication failed",
+                        code=response.status,
+                        path=path,
+                    )
                 payload = await response.json(content_type=None)
+                # The login endpoint returns structured errors with HTTP 400.
+                # Read the envelope before treating that as a transport failure.
+                if not isinstance(payload, dict) or payload.get("code") in (
+                    None,
+                    0,
+                    200,
+                    "0",
+                    "200",
+                ):
+                    response.raise_for_status()
         except RobotailAuthError:
             raise
         except (ClientError, TimeoutError, json.JSONDecodeError) as err:
@@ -120,9 +138,9 @@ class RobotailApi:
         code = payload.get("code")
         if code not in (None, 0, 200, "0", "200"):
             message = str(payload.get("message") or "Robotail request failed")
-            if code in (1001, 1002, 1003, 1004, 401, 403):
-                raise RobotailAuthError(message)
-            raise RobotailError(message)
+            if str(code) in ("401", "403"):
+                raise RobotailAuthError(message, code=code, path=path)
+            raise RobotailError(message, code=code, path=path)
         return payload.get("data", payload)
 
     async def login(
@@ -133,7 +151,7 @@ class RobotailApi:
             password.encode(), usedforsecurity=False
         ).hexdigest()
         data = await self._request(
-            "POST",
+            "PUT",
             "/user-service-rest/v2/user/login",
             authenticated=False,
             json_body={
@@ -146,7 +164,7 @@ class RobotailApi:
         token_data = data.get("token", data) if isinstance(data, dict) else {}
         token = token_data.get("token") or token_data.get("accessToken")
         if not token:
-            raise RobotailAuthError("Login succeeded but no access token was returned")
+            raise RobotailError("Login succeeded but no access token was returned")
         self.auth = RobotailAuth(
             token=token,
             refresh_token=token_data.get("refreshToken"),
