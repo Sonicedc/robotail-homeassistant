@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Robotail",
+        "description": "Enter the same account you use in the Robotail app. The litter box must already be paired in the official app.",
+        "data": {
+          "username": "Email address or phone number",
+          "password": "Password",
+          "account_type": "Account type",
+          "area_code": "Phone country calling code"
+        },
+        "data_description": {
+          "area_code": "Used only for phone-number accounts, for example +1."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to Robotail",
+      "invalid_auth": "Robotail rejected the account details",
+      "unknown": "Unexpected response from Robotail"
+    },
+    "abort": {
+      "already_configured": "This Robotail account is already configured"
+    }
+  },
+  "selector": {
+    "account_type": {
+      "options": {
+        "email": "Email",
+        "phone": "Phone number"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "online": {"name": "Connectivity"}
+    },
+    "sensor": {
+      "last_visit": {"name": "Last visit"},
+      "last_weight": {"name": "Last visit weight"},
+      "last_duration": {"name": "Last visit duration"},
+      "usage_count": {"name": "Usage count"},
+      "waste_drawer": {"name": "Waste drawer fullness"}
+    }
+  }
+}
