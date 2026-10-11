@@ -8,10 +8,12 @@
           "username": "Email address or phone number",
           "password": "Password",
           "account_type": "Account type",
-          "area_code": "Phone country calling code"
+          "area_code": "Phone country calling code",
+          "country_code": "Country code"
         },
         "data_description": {
-          "area_code": "Used only for phone-number accounts, for example +1."
+          "area_code": "Used only for phone-number accounts, for example +1.",
+          "country_code": "Two-letter country code, for example US or CA."
         }
       }
     },

@@ -14,12 +14,14 @@ APP_KEY = "xzy321gvms7mqq32idf8yb9nxbdc9gs5"
 
 CONF_ACCOUNT_TYPE = "account_type"
 CONF_AREA_CODE = "area_code"
+CONF_COUNTRY_CODE = "country_code"
 CONF_DEVICE_ID = "device_id"
 ACCOUNT_TYPE_EMAIL = "email"
 ACCOUNT_TYPE_PHONE = "phone"
 ACCOUNT_TYPE_VALUES = {ACCOUNT_TYPE_PHONE: 1, ACCOUNT_TYPE_EMAIL: 2}
 
 DEFAULT_AREA_CODE = "+1"
+DEFAULT_COUNTRY_CODE = "US"
 DEFAULT_SCAN_INTERVAL = timedelta(minutes=1)
 
 ATTR_RECORD_ID = "record_id"
@@ -29,4 +31,3 @@ ATTR_CAT_ID = "cat_id"
 ATTR_CAT_NAME = "cat_name"
 
 EVENT_CAT_VISIT = f"{DOMAIN}_cat_visit"
-

@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import re
 import time
 from typing import Any
 import uuid
@@ -24,6 +25,18 @@ class RobotailAuthError(RobotailError):
 
 class RobotailConnectionError(RobotailError):
     """Robotail could not be reached."""
+
+
+def normalize_account(account: str, account_type: str, calling_code: str) -> str:
+    """Match the official app's phone-account construction."""
+    account = account.strip()
+    if account_type != "phone":
+        return account
+    phone = re.sub(r"\D", "", account)
+    prefix = re.sub(r"\D", "", calling_code)
+    if prefix and not phone.startswith(prefix):
+        phone = f"{prefix}{phone}"
+    return phone
 
 
 @dataclass(slots=True)
@@ -113,7 +126,7 @@ class RobotailApi:
         return payload.get("data", payload)
 
     async def login(
-        self, account: str, password: str, account_type: str, area_code: str
+        self, account: str, password: str, account_type: str, country_code: str
     ) -> RobotailAuth:
         """Authenticate using the same password flow as the official app."""
         password_hash = hashlib.md5(
@@ -127,7 +140,7 @@ class RobotailApi:
                 "account": account,
                 "accountType": ACCOUNT_TYPE_VALUES[account_type],
                 "password": password_hash,
-                "areaCode": area_code if account_type == "phone" else None,
+                "areaCode": country_code.upper(),
             },
         )
         token_data = data.get("token", data) if isinstance(data, dict) else {}

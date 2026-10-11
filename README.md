@@ -23,6 +23,11 @@ This integration uses Robotail's cloud API. The litter box must first be paired 
 4. Search for **Robotail**.
 5. Enter the same login details used by the Robotail app.
 
+For a US phone account, enter the ten-digit national phone number, select
+**Phone number**, use `+1` as the calling code, and `US` as the country code.
+The integration automatically constructs the full account number exactly as
+the official app does.
+
 For a genuinely fresh test, do not copy any database or token files. The setup
 flow performs its own login and device discovery.
 

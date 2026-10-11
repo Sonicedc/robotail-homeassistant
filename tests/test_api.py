@@ -6,8 +6,13 @@ import hashlib
 
 import pytest
 
-from custom_components.robotail.api import RobotailApi
+from custom_components.robotail.api import RobotailApi, normalize_account
 from custom_components.robotail.const import ACCOUNT_TYPE_EMAIL
+
+
+def test_us_phone_account_is_prefixed_like_official_app():
+    assert normalize_account("(252) 555-0041", "phone", "+1") == "12525550041"
+    assert normalize_account("12525550041", "phone", "+1") == "12525550041"
 
 
 class FakeResponse:
@@ -57,7 +62,7 @@ async def test_login_hashes_password_and_reads_token():
     )
     api = RobotailApi(session, device_id="device-id")
 
-    auth = await api.login("person@example.com", "password", ACCOUNT_TYPE_EMAIL, "+1")
+    auth = await api.login("person@example.com", "password", ACCOUNT_TYPE_EMAIL, "US")
 
     assert auth.token == "access-token"
     assert auth.refresh_token == "refresh-token"
@@ -65,6 +70,7 @@ async def test_login_hashes_password_and_reads_token():
     assert body["password"] == hashlib.md5(
         b"password", usedforsecurity=False
     ).hexdigest()
+    assert body["areaCode"] == "US"
     assert "authorization" not in session.requests[0][2]["headers"]
 
 

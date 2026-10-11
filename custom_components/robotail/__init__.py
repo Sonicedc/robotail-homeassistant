@@ -8,10 +8,16 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import RobotailApi, RobotailAuthError, RobotailConnectionError
+from .api import (
+    RobotailApi,
+    RobotailAuthError,
+    RobotailConnectionError,
+    normalize_account,
+)
 from .const import (
     CONF_ACCOUNT_TYPE,
     CONF_AREA_CODE,
+    CONF_COUNTRY_CODE,
     CONF_DEVICE_ID,
     DOMAIN,
     EVENT_CAT_VISIT,
@@ -29,10 +35,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: RobotailConfigEntry) -> 
     )
     try:
         await api.login(
-            entry.data[CONF_USERNAME],
+            normalize_account(
+                entry.data[CONF_USERNAME],
+                entry.data[CONF_ACCOUNT_TYPE],
+                entry.data[CONF_AREA_CODE],
+            ),
             entry.data[CONF_PASSWORD],
             entry.data[CONF_ACCOUNT_TYPE],
-            entry.data[CONF_AREA_CODE],
+            entry.data[CONF_COUNTRY_CODE],
         )
     except RobotailAuthError as err:
         raise ConfigEntryAuthFailed from err
