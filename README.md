@@ -12,9 +12,7 @@ litter boxes, initially developed against the UCAT C32.
 - Cloud connectivity state
 - A `robotail_cat_visit` Home Assistant event for new visits
 
-This integration uses Robotail's cloud API. It does not require a jailbroken
-phone, an extracted app database, a device IP address, or an energy-monitoring
-plug. The litter box must first be paired using the official Robotail app.
+This integration uses Robotail's cloud API. The litter box must first be paired using the official Robotail app.
 
 ## Test installation
 
