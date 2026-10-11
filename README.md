@@ -30,9 +30,9 @@ flow performs its own login and device discovery.
 
 ## HACS development installation
 
-Until this repository is published, add its eventual GitHub URL to HACS as a
-custom repository of type **Integration**. The repository already includes the
-required `hacs.json`, manifest version, and `custom_components` layout.
+Add `https://github.com/Sonicedc/robotail-homeassistant` to HACS as a custom
+repository of type **Integration**. The repository includes the required
+`hacs.json`, manifest version, and `custom_components` layout.
 
 ## Automation event
 
