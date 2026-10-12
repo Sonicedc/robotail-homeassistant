@@ -19,11 +19,11 @@ from .const import (
     CONF_AREA_CODE,
     CONF_COUNTRY_CODE,
     CONF_DEVICE_ID,
-    DOMAIN,
     EVENT_CAT_VISIT,
     PLATFORMS,
 )
 from .coordinator import RobotailCoordinator
+from .visit import last_cat_name
 
 type RobotailConfigEntry = ConfigEntry[RobotailCoordinator]
 
@@ -70,6 +70,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: RobotailConfigEntry) -> 
                         "weight": visit.get("weight"),
                         "duration": visit.get("costTime"),
                         "event_time": visit.get("eventTime"),
+                        "cat_id": visit.get("catInfoId") or visit.get("catId"),
+                        "cat_name": last_cat_name(data),
                     },
                 )
 

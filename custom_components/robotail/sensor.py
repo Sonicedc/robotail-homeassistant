@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE, UnitOfMass, UnitOfTime
 from homeassistant.core import HomeAssistant
@@ -21,6 +26,7 @@ from .const import (
 )
 from .coordinator import RobotailCoordinator
 from .entity import RobotailEntity
+from .visit import last_cat_name
 
 
 def _find(data: dict[str, Any], *keys: str) -> Any:
@@ -42,6 +48,12 @@ class RobotailSensorDescription(SensorEntityDescription):
 
 
 SENSORS = (
+    RobotailSensorDescription(
+        key="last_cat",
+        translation_key="last_cat",
+        icon="mdi:cat",
+        value_fn=last_cat_name,
+    ),
     RobotailSensorDescription(
         key="last_visit",
         translation_key="last_visit",
@@ -126,6 +138,7 @@ class RobotailSensor(RobotailEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         if self.entity_description.key not in {
+            "last_cat",
             "last_visit",
             "last_weight",
             "last_duration",
@@ -136,6 +149,6 @@ class RobotailSensor(RobotailEntity, SensorEntity):
             ATTR_RECORD_ID: visit.get("recordId"),
             ATTR_EVENT_TYPE: visit.get("eventType"),
             ATTR_CONFIRMED: visit.get("confirmed"),
-            ATTR_CAT_ID: visit.get("catId") or visit.get("catInfoId"),
-            ATTR_CAT_NAME: visit.get("catName"),
+            ATTR_CAT_ID: visit.get("catInfoId") or visit.get("catId"),
+            ATTR_CAT_NAME: last_cat_name(self.robotail_data),
         }

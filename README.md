@@ -1,6 +1,6 @@
 # Robotail for Home Assistant
 
-An unofficial, read-only Home Assistant integration for Robotail/AIROBO smart
+An unofficial Home Assistant integration for Robotail/AIROBO smart
 litter boxes, initially developed against the UCAT C32.
 
 ## Features
@@ -11,6 +11,9 @@ litter boxes, initially developed against the UCAT C32.
 - Usage count and waste-drawer fullness when reported by the device
 - Cloud connectivity state
 - A `robotail_cat_visit` Home Assistant event for new visits
+- Last visiting cat, when Robotail associates the visit with a cat profile
+- Adjustable automatic-clean delay (1–60 minutes)
+- Automatic cleaning enable/disable switch
 
 This integration uses Robotail's cloud API. The litter box must first be paired using the official Robotail app.
 
@@ -49,12 +52,19 @@ event_data:
   weight: 4.1
   duration: 34
   event_time: "..."
+  cat_id: "..."
+  cat_name: "..."
 ```
 
 Robotail is polled once per minute. Existing history does not fire events when
 Home Assistant starts.
 
 ## Status and limitations
+
+Version 0.1.4 adds cat identity and automatic-clean settings. Cat identity is
+unknown when Robotail has not assigned a profile; it is not guessed from weight.
+Setting changes are checked against the cloud configuration after writing.
+Manual cleaning, live cat-inside state, and live cleaning status are not yet exposed.
 
 Version 0.1.3 uses a Robotail client header accepted by the cloud service;
 the previous `HomeAssistant-Robotail` header caused HTTP 403 before credentials
@@ -64,7 +74,7 @@ API code, including structured errors returned with HTTP 400. After updating
 through HACS, restart Home Assistant before retrying setup.
 
 - Unofficial and not affiliated with Robotail or AIROBO.
-- Read-only by design; cleaning commands are not exposed.
+- Manual cleaning commands are not exposed.
 - Cloud API changes may break the integration.
 - Email/phone login and regional behavior need broader real-world testing.
 - Credentials remain in the Home Assistant config entry so the integration can

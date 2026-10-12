@@ -138,3 +138,48 @@ async def test_event_history_payload():
     request = session.requests[0]
     assert request[2]["json"]["serialNumber"] == "serial-number"
     assert request[2]["headers"]["authorization"] == "access-token"
+
+
+@pytest.mark.asyncio
+async def test_clean_delay_preserves_enabled_state_in_app_switch_payload():
+    session = FakeSession([{"code": 0, "data": 1}])
+    api = RobotailApi(session, device_id="device-id", token="access-token")
+    await api.set_clean_delay("serial-number", 5, 0)
+    method, url, kwargs = session.requests[0]
+    assert method == "PUT"
+    assert url.endswith("/box/config/switch/update")
+    assert kwargs["json"] == {
+        "functionType": 2,
+        "controlSwitch": 0,
+        "optionInt": 5,
+        "serialNumber": "serial-number",
+    }
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("minutes", [0, 61, 1.5, True])
+async def test_invalid_delay_never_reaches_network(minutes):
+    session = FakeSession([])
+    api = RobotailApi(session, device_id="device-id", token="access-token")
+    with pytest.raises(ValueError):
+        await api.set_clean_delay("serial-number", minutes, 1)
+    assert session.requests == []
+
+
+@pytest.mark.asyncio
+async def test_profile_and_im_routes():
+    session = FakeSession(
+        [
+            {"code": 0, "data": [{"catInfoId": 10, "nickname": "Cat"}]},
+            {"code": 0, "data": {"subTopic": "topic"}},
+            {"code": 0, "data": [{"userId": "device-user", "userName": "serial"}]},
+        ]
+    )
+    api = RobotailApi(session, device_id="device-id", token="access-token")
+    assert len(await api.cats()) == 1
+    assert (await api.im_login())["subTopic"] == "topic"
+    assert len(await api.im_friends()) == 1
+    assert session.requests[0][0] == "GET"
+    assert session.requests[1][0] == "POST"
+    assert session.requests[1][2]["json"] == {"type": 2}
+    assert session.requests[2][0] == "GET"

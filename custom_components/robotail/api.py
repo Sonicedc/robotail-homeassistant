@@ -55,7 +55,7 @@ class RobotailAuth:
 
 
 class RobotailApi:
-    """Minimal read-only Robotail API client."""
+    """Robotail account, history, and configuration API client."""
 
     def __init__(
         self,
@@ -194,6 +194,60 @@ class RobotailApi:
             params={"serialNumber": serial},
         )
         return data if isinstance(data, dict) else {}
+
+    async def cats(self) -> list[dict[str, Any]]:
+        """Read the account's cat profiles for exact visit-identity lookup."""
+        data = await self._request("GET", "/catbox-server/web/cat/info")
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            for key in ("records", "list", "cats"):
+                if isinstance(data.get(key), list):
+                    return data[key]
+        return []
+
+    async def im_login(self) -> dict[str, Any]:
+        """Obtain short-lived credentials for the device-message channel."""
+        data = await self._request(
+            "POST", "/v1/ubtechinc-im-manager/im/login", json_body={"type": 2}
+        )
+        if not isinstance(data, dict):
+            raise RobotailError("Unexpected device-message bootstrap response")
+        return data
+
+    async def im_friends(self) -> list[dict[str, Any]]:
+        """Read device messaging profiles to map sender IDs to serials."""
+        data = await self._request("GET", "/v1/ubtechinc-im-manager/im/friends")
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            for key in ("friends", "list", "records"):
+                if isinstance(data.get(key), list):
+                    return data[key]
+        return []
+
+    async def set_clean_delay(self, serial: str, minutes: int, enabled: int) -> None:
+        """Update auto-clean settings using the official app's type-2 switch."""
+        if (
+            isinstance(minutes, bool)
+            or not isinstance(minutes, int)
+            or not 1 <= minutes <= 60
+        ):
+            raise ValueError(
+                "Automatic-clean delay must be an integer from 1 to 60 minutes"
+            )
+        if enabled not in (0, 1):
+            raise ValueError("Automatic cleaning state must be 0 or 1")
+        await self._request(
+            "PUT",
+            "/catbox-server/box/config/switch/update",
+            json_body={
+                "functionType": 2,
+                "controlSwitch": enabled,
+                "optionInt": minutes,
+                "serialNumber": serial,
+            },
+        )
 
     async def usage(self, serial: str) -> dict[str, Any]:
         data = await self._request(

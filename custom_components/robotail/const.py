@@ -3,7 +3,7 @@
 from datetime import timedelta
 
 DOMAIN = "robotail"
-PLATFORMS = ["binary_sensor", "sensor"]
+PLATFORMS = ["binary_sensor", "sensor", "number", "switch"]
 
 API_HOST = "https://apis.airrobo-home.com"
 # Robotail Android app's shared production client identity. This is not a

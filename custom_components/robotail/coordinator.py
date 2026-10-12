@@ -30,11 +30,15 @@ class RobotailCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         try:
             devices = await self.api.devices()
+            try:
+                cats = await self.api.cats()
+            except RobotailError:
+                # Cat-profile access may be limited on shared accounts.
+                # Measurements remain available even without identity metadata.
+                cats = []
 
             async def fetch(device: dict[str, Any]) -> tuple[str, dict[str, Any]]:
-                serial = str(
-                    device.get("serialNumber") or device.get("sn") or ""
-                )
+                serial = str(device.get("serialNumber") or device.get("sn") or "")
                 if not serial:
                     raise RobotailError("A device did not include a serial number")
                 config, usage, events = await asyncio.gather(
@@ -47,8 +51,10 @@ class RobotailCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                     "config": config,
                     "usage": usage,
                     "events": events,
+                    "cats": cats,
                     "latest_visit": next(
-                        (row for row in events if row.get("eventType") == 3), None
+                        (row for row in events if str(row.get("eventType")) == "3"),
+                        None,
                     ),
                 }
 

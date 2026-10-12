@@ -36,10 +36,17 @@
     }
   },
   "entity": {
+    "number": {
+      "automatic_clean_delay": {"name": "Automatic clean delay"}
+    },
+    "switch": {
+      "automatic_cleaning": {"name": "Automatic cleaning"}
+    },
     "binary_sensor": {
       "online": {"name": "Connectivity"}
     },
     "sensor": {
+      "last_cat": {"name": "Last visiting cat"},
       "last_visit": {"name": "Last visit"},
       "last_weight": {"name": "Last visit weight"},
       "last_duration": {"name": "Last visit duration"},

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -18,8 +21,7 @@ async def async_setup_entry(
 ) -> None:
     coordinator: RobotailCoordinator = entry.runtime_data
     async_add_entities(
-        RobotailOnlineBinarySensor(coordinator, serial)
-        for serial in coordinator.data
+        RobotailOnlineBinarySensor(coordinator, serial) for serial in coordinator.data
     )
 
 
@@ -42,4 +44,3 @@ class RobotailOnlineBinarySensor(RobotailEntity, BinarySensorEntity):
         if isinstance(value, str):
             return value.lower() in {"1", "true", "online", "connected"}
         return bool(value) if value is not None else None
-

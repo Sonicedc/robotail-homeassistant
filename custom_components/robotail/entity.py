@@ -35,4 +35,3 @@ class RobotailEntity(CoordinatorEntity[RobotailCoordinator]):
     @property
     def robotail_data(self) -> dict[str, Any]:
         return self.coordinator.data[self.serial]
-
