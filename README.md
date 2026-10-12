@@ -8,7 +8,6 @@ litter boxes, initially developed against the UCAT C32.
 - Guided setup using a normal Robotail email or phone account
 - Automatic discovery of litter boxes attached to the account
 - Last confirmed litter-box visit time, weight, and duration
-- Usage count and waste-drawer fullness when reported by the device
 - Cloud connectivity state
 - A `robotail_cat_visit` Home Assistant event for new visits
 - Last visiting cat, when Robotail associates the visit with a cat profile
@@ -73,6 +72,22 @@ Robotail is polled once per minute. Existing history does not fire events when
 Home Assistant starts.
 
 ## Status and limitations
+
+Version 0.1.6 fixes automatic-clean delay units: the API uses seconds while
+Home Assistant displays minutes (1 minute = 60 seconds). The automatic-cleaning
+switch now preserves the delay using the same conversion. Each settings write
+reads current configuration first and is serialized to preserve changes made
+in the app. App changes appear on the next successful one-minute poll.
+
+Usage Count and Waste Drawer Fullness have been removed because their C32
+measurements are unverified and did not update reliably. Their obsolete entity
+registrations are removed on setup; other entities and recorded history are
+not intentionally deleted. The usage endpoint is no longer polled, so its
+failure cannot block settings or visit updates.
+
+After updating, restore your intended delay once in the app or Home Assistant:
+older releases may have saved seconds where minutes were intended. This update
+does not automatically change the device's settings.
 
 Version 0.1.5 adds a pre-login account-sharing guide, bundled Robotail branding,
 the device messaging-profile online-status lookup, and automatic re-login after

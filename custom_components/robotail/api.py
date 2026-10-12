@@ -282,7 +282,7 @@ class RobotailApi:
             json_body={
                 "functionType": 2,
                 "controlSwitch": enabled,
-                "optionInt": minutes,
+                "optionInt": minutes * 60,
                 "serialNumber": serial,
             },
         )

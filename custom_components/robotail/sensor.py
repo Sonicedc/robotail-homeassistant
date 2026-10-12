@@ -13,8 +13,9 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfMass, UnitOfTime
+from homeassistant.const import UnitOfMass, UnitOfTime
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import (
@@ -27,15 +28,6 @@ from .const import (
 from .coordinator import RobotailCoordinator
 from .entity import RobotailEntity
 from .visit import last_cat_name
-
-
-def _find(data: dict[str, Any], *keys: str) -> Any:
-    for section_name in ("usage", "config", "device"):
-        section = data.get(section_name) or {}
-        for key in keys:
-            if key in section and section[key] is not None:
-                return section[key]
-    return None
 
 
 def _visit(data: dict[str, Any], key: str) -> Any:
@@ -75,21 +67,6 @@ SENSORS = (
         device_class=SensorDeviceClass.DURATION,
         value_fn=lambda data: _visit(data, "costTime"),
     ),
-    RobotailSensorDescription(
-        key="usage_count",
-        translation_key="usage_count",
-        value_fn=lambda data: _find(
-            data, "boxUseTimes", "useTimes", "usageCount", "times"
-        ),
-    ),
-    RobotailSensorDescription(
-        key="waste_drawer",
-        translation_key="waste_drawer",
-        native_unit_of_measurement=PERCENTAGE,
-        value_fn=lambda data: _find(
-            data, "percentage", "fullPercent", "boxFullPercent", "fullness"
-        ),
-    ),
 )
 
 
@@ -114,6 +91,16 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     coordinator: RobotailCoordinator = entry.runtime_data
+    # Remove only our retired entity registrations, not visit entities or history.
+    registry = er.async_get(hass)
+    retired = {
+        f"{serial}_{key}"
+        for serial in coordinator.data
+        for key in ("usage_count", "waste_drawer")
+    }
+    for registered in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if registered.domain == "sensor" and registered.unique_id in retired:
+            registry.async_remove(registered.entity_id)
     async_add_entities(
         RobotailSensor(coordinator, serial, description)
         for serial in coordinator.data

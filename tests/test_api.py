@@ -151,7 +151,7 @@ async def test_clean_delay_preserves_enabled_state_in_app_switch_payload():
     assert kwargs["json"] == {
         "functionType": 2,
         "controlSwitch": 0,
-        "optionInt": 5,
+        "optionInt": 300,
         "serialNumber": "serial-number",
     }
 
@@ -232,3 +232,12 @@ async def test_control_is_not_replayed_after_auth_failure():
     with pytest.raises(RobotailAuthError):
         await api.set_clean_delay("box", 1, 1)
     assert len(session.requests) == 2
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("minutes,seconds", [(1, 60), (5, 300), (60, 3600)])
+async def test_delay_write_uses_seconds(minutes, seconds):
+    session = FakeSession([{"code": 0, "data": 1}])
+    api = RobotailApi(session, device_id="test", token="test")
+    await api.set_clean_delay("box", minutes, 1)
+    assert session.requests[0][2]["json"]["optionInt"] == seconds

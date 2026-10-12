@@ -26,6 +26,7 @@ class RobotailCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             update_interval=DEFAULT_SCAN_INTERVAL,
         )
         self.api = api
+        self.settings_lock = asyncio.Lock()
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         try:
@@ -45,15 +46,13 @@ class RobotailCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                 serial = str(device.get("serialNumber") or device.get("sn") or "")
                 if not serial:
                     raise RobotailError("A device did not include a serial number")
-                config, usage, events = await asyncio.gather(
+                config, events = await asyncio.gather(
                     self.api.configuration(serial),
-                    self.api.usage(serial),
                     self.api.events(serial),
                 )
                 return serial, {
                     "device": device,
                     "config": config,
-                    "usage": usage,
                     "events": events,
                     "cats": cats,
                     "online_status": next(

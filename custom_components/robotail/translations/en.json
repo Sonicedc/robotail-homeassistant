@@ -53,9 +53,7 @@
       "last_cat": {"name": "Last visiting cat"},
       "last_visit": {"name": "Last visit"},
       "last_weight": {"name": "Last visit weight"},
-      "last_duration": {"name": "Last visit duration"},
-      "usage_count": {"name": "Usage count"},
-      "waste_drawer": {"name": "Waste drawer fullness"}
+      "last_duration": {"name": "Last visit duration"}
     }
   }
 }

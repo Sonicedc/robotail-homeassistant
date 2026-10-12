@@ -12,6 +12,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .api import RobotailError
 from .coordinator import RobotailCoordinator
 from .entity import RobotailEntity
+from .settings import delay_minutes
 
 
 async def async_setup_entry(
@@ -46,19 +47,18 @@ class RobotailAutomaticCleaning(RobotailEntity, SwitchEntity):
         return None
 
     async def _set_enabled(self, enabled: int) -> None:
-        delay = (self.robotail_data.get("config") or {}).get("lazyTime")
         try:
-            delay_number = float(delay)
-        except (TypeError, ValueError):
-            raise HomeAssistantError(
-                "The automatic cleaning delay is unavailable"
-            ) from None
-        if not 1 <= delay_number <= 60 or delay_number != int(delay_number):
-            raise HomeAssistantError("The automatic cleaning delay is unavailable")
-        try:
-            await self.coordinator.api.set_clean_delay(
-                self.serial, int(delay_number), enabled
-            )
+            async with self.coordinator.settings_lock:
+                config = await self.coordinator.api.configuration(self.serial)
+                minutes = delay_minutes(config.get("lazyTime"))
+                if minutes is None or not 1 <= minutes <= 60 or minutes != int(minutes):
+                    raise HomeAssistantError(
+                        "Set a valid 1–60 minute delay before "
+                        "toggling automatic cleaning"
+                    )
+                await self.coordinator.api.set_clean_delay(
+                    self.serial, int(minutes), enabled
+                )
         except RobotailError as err:
             raise HomeAssistantError(
                 "Robotail could not change automatic cleaning"
