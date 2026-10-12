@@ -183,3 +183,52 @@ async def test_profile_and_im_routes():
     assert session.requests[1][0] == "POST"
     assert session.requests[1][2]["json"] == {"type": 2}
     assert session.requests[2][0] == "GET"
+
+
+@pytest.mark.asyncio
+async def test_expired_token_renews_once_and_retries_read():
+    session = FakeSession(
+        [
+            {"data": {"token": {"token": "old"}}},
+            {"code": 401},
+            {"data": {"token": {"token": "new"}}},
+            {"data": [{"serialNumber": "box"}]},
+        ]
+    )
+    api = RobotailApi(session, device_id="test")
+    await api.login("secondary", "password", "email", "US")
+    assert len(await api.devices()) == 1
+    assert [r[0] for r in session.requests] == ["PUT", "GET", "PUT", "GET"]
+    assert session.requests[-1][2]["headers"]["authorization"] == "new"
+
+
+@pytest.mark.asyncio
+async def test_renewal_does_not_loop_when_new_token_is_rejected():
+    session = FakeSession(
+        [
+            {"data": {"token": {"token": "old"}}},
+            {"code": 401},
+            {"data": {"token": {"token": "new"}}},
+            {"code": 401},
+        ]
+    )
+    api = RobotailApi(session, device_id="test")
+    await api.login("secondary", "password", "email", "US")
+    with pytest.raises(RobotailAuthError):
+        await api.devices()
+    assert len(session.requests) == 4
+
+
+@pytest.mark.asyncio
+async def test_control_is_not_replayed_after_auth_failure():
+    session = FakeSession(
+        [
+            {"data": {"token": {"token": "old"}}},
+            {"code": 401},
+        ]
+    )
+    api = RobotailApi(session, device_id="test")
+    await api.login("secondary", "password", "email", "US")
+    with pytest.raises(RobotailAuthError):
+        await api.set_clean_delay("box", 1, 1)
+    assert len(session.requests) == 2

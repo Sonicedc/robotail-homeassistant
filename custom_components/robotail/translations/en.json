@@ -2,8 +2,12 @@
   "config": {
     "step": {
       "user": {
+        "title": "Prepare a shared Robotail account",
+        "description": "Before continuing:\n\n1. Pair and sync the device with your main account in the Robotail app.\n2. Create a new, secondary account in the Robotail app.\n3. From the main account, share the device with the secondary account.\n4. Sign into the app with the secondary account and accept the invitation.\n5. Use the secondary account to sign into this integration.\n\nContinue when the shared device is visible in the secondary account."
+      },
+      "login": {
         "title": "Connect to Robotail",
-        "description": "Enter the same account you use in the Robotail app. The litter box must already be paired in the official app.",
+        "description": "Sign in with the secondary Robotail account that accepted the shared-device invitation, not the main account.",
         "data": {
           "username": "Email address or phone number",
           "password": "Password",

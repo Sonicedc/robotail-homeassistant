@@ -56,6 +56,12 @@ class RobotailConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
+        """Show account-sharing prerequisites before asking for credentials."""
+        if user_input is not None:
+            return await self.async_step_login()
+        return self.async_show_form(step_id="user", data_schema=vol.Schema({}))
+
+    async def async_step_login(self, user_input=None):
         """Collect and validate a normal Robotail login."""
         errors: dict[str, str] = {}
         placeholders = {"error_stage": "setup", "error_code": "unknown"}
@@ -122,7 +128,7 @@ class RobotailConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 },
             )
         return self.async_show_form(
-            step_id="user",
+            step_id="login",
             data_schema=schema,
             errors=errors,
             description_placeholders=placeholders,

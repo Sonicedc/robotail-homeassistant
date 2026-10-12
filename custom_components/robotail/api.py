@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import re
@@ -73,6 +74,8 @@ class RobotailApi:
         self._app_key = app_key
         self._device_id = device_id
         self.auth = RobotailAuth(token=token) if token else None
+        self._login_details: tuple[str, str, str, str] | None = None
+        self._reauth_lock = asyncio.Lock()
 
     def _headers(self, *, authenticated: bool = True) -> dict[str, str]:
         timestamp = int(time.time() * 1000)
@@ -95,6 +98,40 @@ class RobotailApi:
         return headers
 
     async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        authenticated: bool = True,
+        json_body: dict[str, Any] | None = None,
+        params: dict[str, str] | None = None,
+    ) -> Any:
+        """Renew a rejected session once for reads, without replaying controls."""
+        token = self.auth.token if self.auth else None
+        try:
+            return await self._request_once(
+                method,
+                path,
+                authenticated=authenticated,
+                json_body=json_body,
+                params=params,
+            )
+        except RobotailAuthError:
+            safe_read = method == "GET" or path == "/catbox-server/web/box/record/new"
+            if not authenticated or not safe_read or self._login_details is None:
+                raise
+            async with self._reauth_lock:
+                if self.auth is None or self.auth.token == token:
+                    await self.login(*self._login_details)
+            return await self._request_once(
+                method,
+                path,
+                authenticated=True,
+                json_body=json_body,
+                params=params,
+            )
+
+    async def _request_once(
         self,
         method: str,
         path: str,
@@ -174,6 +211,7 @@ class RobotailApi:
             if isinstance(data, dict)
             else None,
         )
+        self._login_details = (account, password, account_type, country_code)
         return self.auth
 
     async def devices(self) -> list[dict[str, Any]]:

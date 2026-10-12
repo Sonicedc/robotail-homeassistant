@@ -31,6 +31,10 @@ class RobotailCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
         try:
             devices = await self.api.devices()
             try:
+                messaging_profiles = await self.api.im_friends()
+            except RobotailError:
+                messaging_profiles = []
+            try:
                 cats = await self.api.cats()
             except RobotailError:
                 # Cat-profile access may be limited on shared accounts.
@@ -52,6 +56,14 @@ class RobotailCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                     "usage": usage,
                     "events": events,
                     "cats": cats,
+                    "online_status": next(
+                        (
+                            profile.get("onlineStatus")
+                            for profile in messaging_profiles
+                            if str(profile.get("userName")) == serial
+                        ),
+                        None,
+                    ),
                     "latest_visit": next(
                         (row for row in events if str(row.get("eventType")) == "3"),
                         None,

@@ -34,6 +34,19 @@ the official app does.
 For a genuinely fresh test, do not copy any database or token files. The setup
 flow performs its own login and device discovery.
 
+Before signing in, pair/sync the box with your main Robotail account. Create a
+secondary account in the official app, share the box from the main account,
+then sign into the app as the secondary account and accept the invitation.
+Use that secondary account for Home Assistant. The setup wizard shows these
+instructions before requesting login details. Keep the phone app on the main
+account to avoid competing sessions with the integration account.
+
+Connectivity indicates the device's cloud-reported online status from its
+messaging profile, not Home Assistant's internet connection. If Robotail does
+not supply that status, the value remains unknown.
+
+The supplied Robotail logo is bundled locally for Home Assistant 2026.3 and newer.
+
 ## HACS development installation
 
 Add `https://github.com/Sonicedc/robotail-homeassistant` to HACS as a custom
@@ -60,6 +73,14 @@ Robotail is polled once per minute. Existing history does not fire events when
 Home Assistant starts.
 
 ## Status and limitations
+
+Version 0.1.5 adds a pre-login account-sharing guide, bundled Robotail branding,
+the device messaging-profile online-status lookup, and automatic re-login after
+an authentication rejection during reads. Re-login is attempted once per failed
+read; settings commands are never automatically replayed. This is password
+re-login, not a verified refresh-token API. Usage count and drawer fullness still
+depend on values supplied by Robotail and their missing values remain under
+investigation. The integration does not yet use the device's local IP address.
 
 Version 0.1.4 adds cat identity and automatic-clean settings. Cat identity is
 unknown when Robotail has not assigned a profile; it is not guessed from weight.

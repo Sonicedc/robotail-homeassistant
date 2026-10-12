@@ -37,10 +37,11 @@ class RobotailOnlineBinarySensor(RobotailEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        device = self.robotail_data["device"]
-        value = device.get("online")
+        value = self.robotail_data.get("online_status")
         if value is None:
-            value = device.get("onlineStatus", device.get("status"))
-        if isinstance(value, str):
-            return value.lower() in {"1", "true", "online", "connected"}
-        return bool(value) if value is not None else None
+            return None
+        if value in (1, "1"):
+            return True
+        if value in (0, "0"):
+            return False
+        return None
